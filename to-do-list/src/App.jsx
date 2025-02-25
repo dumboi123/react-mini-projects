@@ -3,7 +3,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "./App.css";
 
 function App() {
-  const [job, setJob] = useState("");
+  const [job, setJob] = useState({});
 
   const [jobs, setJobs] = useState(() => {
     const listJobs = JSON.parse(localStorage.getItem("Jobs"));
@@ -16,7 +16,7 @@ function App() {
       localStorage.setItem("Jobs", JSON.stringify(newJob));
       return newJob;
     });
-    setJob("");
+    setJob({});
   };
 
   const handleDelete = (index) => {
@@ -27,11 +27,11 @@ function App() {
     });
   };
 
-  const handleComplete = (index) => {
+  const handleToggleStatus = (index) => {
     setJobs((prev) => {
       const newJobs = prev.map((job, i) => {
         if (i === index) {
-          return { ...job, status: "Completed" };
+          return { ...job, status: job.status === "Completed" ? "In progress" : "Completed" };
         }
         return job;
       });
@@ -49,13 +49,22 @@ function App() {
             type="text"
             placeholder="Enter a task here"
             className="form-control"
-            value={job.name}
+            value={job.name || ""}
             onChange={(e) =>
-              setJob({ name: e.target.value, status: "In progess" })
+              setJob({ name: e.target.value, status: "In progress" })
             }
           />
         </div>
-        <button className="btn btn-primary" onClick={handleSave}>
+        <button
+          className="btn btn-primary"
+          onClick={() => {
+            if (job.name && job.name.trim() !== "") {
+              handleSave();
+            } else {
+              alert("Please enter a task");
+            }
+          }}
+        >
           Save
         </button>
       </div>
@@ -92,10 +101,10 @@ function App() {
                     Delete
                   </button>
                   <button
-                    className="btn btn-success"
-                    onClick={() => handleComplete(index)}
+                    className={`btn ${job.status === "Completed" ? "btn-warning" : "btn-success"} me-2`}
+                    onClick={() => handleToggleStatus(index)}
                   >
-                    Complete
+                    {job.status === "Completed" ? "In Progress" : "Complete"}
                   </button>
                 </td>
               </tr>
