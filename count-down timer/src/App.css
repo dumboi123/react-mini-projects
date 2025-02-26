@@ -109,17 +109,18 @@ body {
         }
         #start {
           .bi-play-fill {
-            font-size: 77%;
-            top: -1px;
+            font-size: 100%;
+            top: -10px;
           }
           &:hover {
             color: darken(#ff6292, 5);
           }
         }
         #pause {
+          display: none;
           .bi-pause-fill {
-            font-size: 90%;
-            top: -1px;
+            font-size: 110%;
+            top: -10px;
             transform: scaleX(0.84);
           }
           &:hover {
@@ -127,8 +128,10 @@ body {
           }
         }
         #reset {
+          display: none;
+          font-size: 100%;
           position: absolute;
-          margin-top: 17.56px;
+          margin-top: 20px;
           transition: margin-top 0.43s, opacity 0.43s;
           .bi bi-arrow-clockwise {
             font-size: 84%;
@@ -167,7 +170,7 @@ body {
       }
     }
   }
-  #options {
+  #input {
     color: #ff6292;
     display: flex;
     font-size: 28px;
@@ -183,16 +186,13 @@ body {
       margin-bottom: -6px;
       text-transform: uppercase;
     }
-    .fa-angle-double-up {
+    .bi-chevron-double-up, .bi-chevron-double-down {
       color: #ff848a;
       cursor: pointer;
     }
-    .fa-angle-double-down {
-      color: #ff5792;
-      cursor: pointer;
-    }
-    #session,
-    #break {
+    #hours,
+    #minutes,
+    #seconds {
       align-items: center;
       display: flex;
       flex-direction: column;
