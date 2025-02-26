@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./App.css";
+import { useRef } from "react";
 
 function App() {
   const [startTimer, setStartTimer] = useState(true);
   const [time, setTime] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   
+  const prevTime = useRef();
   // console.log(`re-render time ${time}`);
   
   useEffect(() => {
@@ -19,6 +21,11 @@ function App() {
     return () => clearInterval(timerId);
   }, [isRunning]);
 
+  useEffect(() => {
+    prevTime.current = time;
+
+  }, [time]);
+  
   const formatTime = (totalSeconds) => {
     const hours = Math.floor(totalSeconds / 3600);
     const minutes = Math.floor((totalSeconds % 3600) / 60);
