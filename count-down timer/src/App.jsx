@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef, useLayoutEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
+import * as Logic from "./Logic";
 import "./App.css";
 
 function App() {
@@ -16,17 +17,19 @@ function App() {
   const startRef = useRef();
   const pauseRef = useRef();
   const resetRef = useRef();
-  // console.log(`re-render time ${time}`);
+  const timeRef = useRef();
+
+  console.log(`re-render time ${time}`);
   useLayoutEffect(() => {
-    setHours((prev) => clamp(prev, 0, 24));
+    setHours((prev) => Logic.clamp(prev, 0, 24));
   }, [hours]);
 
   useLayoutEffect(() => {
-    setMinutes((prev) => clamp(prev, 0, 60));
+    setMinutes((prev) => Logic.clamp(prev, 0, 60));
   }, [minutes]);
 
   useLayoutEffect(() => {
-    setSeconds((prev) => clamp(prev, 0, 60));
+    setSeconds((prev) => Logic.clamp(prev, 0, 60));
   }, [seconds]);
 
   useEffect(() => {
@@ -39,29 +42,21 @@ function App() {
     return () => clearInterval(timerId);
   }, [isRunning]);
 
-  useEffect(() => {
-    prevTime.current = time;
-  }, [time]);
+  // useEffect(() => {
+  //   prevTime.current = time;
+  // }, [time]);
 
-  const convertTime = (hoursInput, minutesInput, secondsInput) => {
-    const hoursToSeconds = hoursInput * 3600;
-    const minutesToSeconds = minutesInput * 60;
-    const totalSeconds = hoursToSeconds + minutesToSeconds + secondsInput;
-    return totalSeconds;
-  }
-  
-  const formatTime = (totalSeconds) => {
-    const hours = Math.floor(totalSeconds / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    const secs = totalSeconds % 60;
-
-    return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(
-      2,
-      "0"
-    )}:${String(secs).padStart(2, "0")}`;
+  const handleIncrement = (setter) => {
+    setter((prev) => prev + 1);
+  };
+  const handleDecrement = (setter) => {
+    setter((prev) => prev - 1);
   };
 
-  const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
+  const handleChange = (setter, condition) => {
+    if (condition === "increase") handleIncrement(setter);
+    else if (condition === "decrease") handleDecrement(setter);
+  };
 
   const handleInput = (e) => {
     if (e.target.value.length === 3 && e.target.value.startsWith("0")) {
@@ -70,16 +65,19 @@ function App() {
   };
 
   const handleReset = () => {
-    setTime(20);
+    setTime(timeRef.current);
     setIsRunning(!isRunning);
-    handleStart();
+    toggleClick();
   };
 
   const handleStart = () => {
+    setTime((pre) => Logic.convertTime(hours, minutes, seconds));
+    console.log(`time ${time}`);
     if (time === 0) {
       window.alert("Time hasn't been set yet");
       return;
     }
+    timeRef.current = time;
     toggleClick();
     setIsRunning(!isRunning);
   };
@@ -104,8 +102,6 @@ function App() {
     }
   };
 
-
-
   return (
     <>
       <div id="pomodoro">
@@ -113,7 +109,7 @@ function App() {
           <div id="timer">
             <div id="title">Ready?</div>
             <div id="countdown">
-              <span id="time">{formatTime(time)}</span>
+              <span id="time">{Logic.formatTime(hours, minutes, seconds)}</span>
             </div>
             <div id="controls" className="reset">
               <div id="start" ref={startRef} onClick={handleStart}>
@@ -132,8 +128,12 @@ function App() {
           </div>
         </div>
         <div id="input">
+          {/* HOURS */}
           <div id="hours">
-            <i className="bi bi-chevron-double-up"></i>
+            <i
+              className="bi bi-chevron-double-up"
+              onClick={() => handleChange(setHours, "increase")}
+            ></i>
             <span className="option-title">Hours</span>
             <input
               type="number"
@@ -141,12 +141,19 @@ function App() {
               max="24"
               min="0"
               onChange={(e) => setHours(e.target.value)}
-              onInput={(e) => handleInput(e) }
+              onInput={(e) => handleInput(e)}
             />
-            <i className="bi bi-chevron-double-down"></i>
+            <i
+              className="bi bi-chevron-double-down"
+              onClick={() => handleChange(setHours, "decrease")}
+            ></i>
           </div>
+          {/* MINUTES */}
           <div id="minutes">
-            <i className="bi bi-chevron-double-up"></i>
+            <i
+              className="bi bi-chevron-double-up"
+              onClick={() => handleChange(setMinutes, "increase")}
+            ></i>
             <span className="option-title">Minutes</span>
             <input
               type="number"
@@ -156,10 +163,17 @@ function App() {
               onChange={(e) => setMinutes(e.target.value)}
               onInput={(e) => handleInput(e)}
             />
-            <i className="bi bi-chevron-double-down"></i>
+            <i
+              className="bi bi-chevron-double-down"
+              onClick={() => handleChange(setMinutes, "decrease")}
+            ></i>
           </div>
+          {/* SECONDS */}
           <div id="seconds">
-            <i className="bi bi-chevron-double-up"></i>
+            <i
+              className="bi bi-chevron-double-up"
+              onClick={() => handleChange(setSeconds, "increase")}
+            ></i>
             <span className="option-title">Seconds</span>
             <input
               type="number"
@@ -169,7 +183,10 @@ function App() {
               onChange={(e) => setSeconds(e.target.value)}
               onInput={(e) => handleInput(e)}
             />
-            <i className="bi bi-chevron-double-down"></i>
+            <i
+              className="bi bi-chevron-double-down"
+              onClick={() => handleChange(setSeconds, "decrease")}
+            ></i>
           </div>
         </div>
       </div>
