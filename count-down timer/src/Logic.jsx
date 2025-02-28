@@ -5,7 +5,12 @@ const convertTime = (hoursInput, minutesInput, secondsInput) => {
   return totalSeconds;
 };
 
-const formatTime = (hours, minutes, seconds) => {
+const formatTime = (totalTime) => {
+
+  const hours = Math.floor(totalTime / 3600);
+  const minutes = Math.floor((totalTime % 3600) / 60);
+  const seconds = totalTime % 60;
+  
   return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(
     2,
     "0"

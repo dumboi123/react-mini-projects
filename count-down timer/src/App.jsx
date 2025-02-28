@@ -1,3 +1,16 @@
+//! useEffect
+// 1. Cap nhat lai state
+// 2. Cap nhat DOM y mutated)
+// 3. Render lai UE
+// 4. Goi cleanup neu deps thay dôi
+// 5. Goi useEffect callback
+//! useLayoutEffect
+// 1. Câp nhât lai state
+// 2. Câp nhat DOM (mutated)
+// 3. Goi cleanup neu deps thay doi (sync)
+// 4. Goi useLayoutEffect callback (sync)
+// 5. Render lai UI
+
 import { useEffect, useState, useRef, useLayoutEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
@@ -10,26 +23,31 @@ function App() {
   const [seconds, setSeconds] = useState(0);
 
   const [time, setTime] = useState(0);
+  const [timeSetted, setTimeSetted] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
 
   const prevTime = useRef();
+
+  const firstTimeRef = useRef(true);
 
   const startRef = useRef();
   const pauseRef = useRef();
   const resetRef = useRef();
   const timeRef = useRef();
 
-  console.log(`re-render time ${time}`);
   useLayoutEffect(() => {
     setHours((prev) => Logic.clamp(prev, 0, 24));
+    setTime(Logic.convertTime(hours, minutes, seconds));
   }, [hours]);
 
   useLayoutEffect(() => {
     setMinutes((prev) => Logic.clamp(prev, 0, 60));
+    setTime(Logic.convertTime(hours, minutes, seconds));
   }, [minutes]);
 
   useLayoutEffect(() => {
     setSeconds((prev) => Logic.clamp(prev, 0, 60));
+    setTime(Logic.convertTime(hours, minutes, seconds));
   }, [seconds]);
 
   useEffect(() => {
@@ -42,9 +60,15 @@ function App() {
     return () => clearInterval(timerId);
   }, [isRunning]);
 
-  // useEffect(() => {
-  //   prevTime.current = time;
-  // }, [time]);
+  useLayoutEffect(() => {
+    if (time === 0 && time < prevTime.current) {
+      setIsRunning(false);
+      toggleClick();
+    }
+    prevTime.current = time;
+    console.log(`time ${time}`);
+    console.log(`prevTime ${prevTime.current}`);
+  }, [time]);
 
   const handleIncrement = (setter) => {
     setter((prev) => prev + 1);
@@ -54,8 +78,10 @@ function App() {
   };
 
   const handleChange = (setter, condition) => {
-    if (condition === "increase") handleIncrement(setter);
-    else if (condition === "decrease") handleDecrement(setter);
+    !isRunning &&
+      (condition === "increase"
+        ? handleIncrement(setter)
+        : handleDecrement(setter));
   };
 
   const handleInput = (e) => {
@@ -66,27 +92,21 @@ function App() {
 
   const handleReset = () => {
     setTime(timeRef.current);
-    setIsRunning(!isRunning);
+    setIsRunning(false);
     toggleClick();
   };
 
   const handleStart = () => {
-    setTime((pre) => Logic.convertTime(hours, minutes, seconds));
-    console.log(`time ${time}`);
     if (time === 0) {
       window.alert("Time hasn't been set yet");
       return;
     }
-    timeRef.current = time;
-    toggleClick();
+    timeRef.current = Logic.convertTime(hours, minutes, seconds);
     setIsRunning(!isRunning);
+    toggleClick();
   };
 
   const handlePause = () => {
-    if (time === 0) {
-      setIsRunning(true);
-      return;
-    }
     setIsRunning(!isRunning);
   };
 
@@ -109,7 +129,7 @@ function App() {
           <div id="timer">
             <div id="title">Ready?</div>
             <div id="countdown">
-              <span id="time">{Logic.formatTime(hours, minutes, seconds)}</span>
+              <span id="time">{Logic.formatTime(time)}</span>
             </div>
             <div id="controls" className="reset">
               <div id="start" ref={startRef} onClick={handleStart}>
