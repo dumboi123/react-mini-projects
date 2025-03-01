@@ -15,6 +15,8 @@ import { useEffect, useState, useRef, useLayoutEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import * as Logic from "./Logic";
+import Clock from "./Clock";
+import Input from "./Input";
 import "./App.css";
 
 function App() {
@@ -28,11 +30,12 @@ function App() {
 
   const prevTime = useRef();
 
-  const firstTimeRef = useRef(true);
+  const [toggleClick, setToggleClick] = useState(() => () => {}); // State to store toggleClick function
 
-  const startRef = useRef();
-  const pauseRef = useRef();
-  const resetRef = useRef();
+  // const startRef = useRef();
+  // const pauseRef = useRef();
+  // const resetRef = useRef();
+
   const timeRef = useRef();
 
   useLayoutEffect(() => {
@@ -61,13 +64,13 @@ function App() {
   }, [isRunning]);
 
   useLayoutEffect(() => {
-    if (time === 0 && time < prevTime.current) {
+    if (time === -1 && time < prevTime.current) {
+      window.alert("Time's up!");
+      setTime(timeRef.current);
       setIsRunning(false);
       toggleClick();
     }
     prevTime.current = time;
-    console.log(`time ${time}`);
-    console.log(`prevTime ${prevTime.current}`);
   }, [time]);
 
   const handleIncrement = (setter) => {
@@ -84,11 +87,11 @@ function App() {
         : handleDecrement(setter));
   };
 
-  const handleInput = (e) => {
-    if (e.target.value.length === 3 && e.target.value.startsWith("0")) {
-      e.target.value = e.target.value.slice(1, 3);
-    }
-  };
+  // const handleInput = (e) => {
+  //   if (e.target.value.length === 3 && e.target.value.startsWith("0")) {
+  //     e.target.value = e.target.value.slice(1, 3);
+  //   }
+  // };
 
   const handleReset = () => {
     setTime(timeRef.current);
@@ -110,46 +113,44 @@ function App() {
     setIsRunning(!isRunning);
   };
 
-  const toggleClick = () => {
-    if (startRef.current.style.display === "none") {
-      startRef.current.style.display = "block";
-      pauseRef.current.style.display = "none";
-      resetRef.current.style.display = "none";
-    } else {
-      startRef.current.style.display = "none";
-      pauseRef.current.style.display = "block";
-      resetRef.current.style.display = "block";
-    }
-  };
+  // const toggleClick = () => {
+  //   if (startRef.current.style.display === "none") {
+  //     startRef.current.style.display = "block";
+  //     pauseRef.current.style.display = "none";
+  //     resetRef.current.style.display = "none";
+  //   } else {
+  //     startRef.current.style.display = "none";
+  //     pauseRef.current.style.display = "block";
+  //     resetRef.current.style.display = "block";
+  //   }
+  // };
 
   return (
     <>
       <div id="pomodoro">
-        <div id="clock">
-          <div id="timer">
-            <div id="title">Ready?</div>
-            <div id="countdown">
-              <span id="time">{Logic.formatTime(time)}</span>
-            </div>
-            <div id="controls" className="reset">
-              <div id="start" ref={startRef} onClick={handleStart}>
-                <i className="bi bi-play-fill"></i> Start
-              </div>
-              <div id="pause" ref={pauseRef} onClick={handlePause}>
-                <i
-                  className={isRunning ? "bi bi-pause-fill" : "bi bi-play-fill"}
-                ></i>
-                {isRunning ? "Pause" : "Continue"}
-              </div>
-              <div id="reset" ref={resetRef} onClick={handleReset}>
-                <i className="bi bi-arrow-clockwise"></i> Reset
-              </div>
-            </div>
-          </div>
-        </div>
+        <Clock
+          logic={Logic}
+          time={time}
+          isRunning={isRunning}
+          handleStart={handleStart}
+          handlePause={handlePause}
+          handleReset={handleReset}
+          setToggleClick={setToggleClick}
+        />
         <div id="input">
           {/* HOURS */}
-          <div id="hours">
+          <Input
+            id="hours"
+            label="Hours"
+            value={hours}
+            max="24"
+            min="0"
+            disabled={isRunning}
+            onChange={(e) => setHours(e.target.value)}
+            onIncrease={() => handleChange(setHours, "increase")}
+            onDecrease={() => handleChange(setHours, "decrease")}
+          />
+          {/* <div id="hours">
             <i
               className="bi bi-chevron-double-up"
               onClick={() => handleChange(setHours, "increase")}
@@ -160,6 +161,7 @@ function App() {
               value={hours}
               max="24"
               min="0"
+              disabled={isRunning}
               onChange={(e) => setHours(e.target.value)}
               onInput={(e) => handleInput(e)}
             />
@@ -167,9 +169,20 @@ function App() {
               className="bi bi-chevron-double-down"
               onClick={() => handleChange(setHours, "decrease")}
             ></i>
-          </div>
+          </div> */}
           {/* MINUTES */}
-          <div id="minutes">
+          <Input
+            id="minutes"
+            label="Minutes"
+            value={minutes}
+            max="60"
+            min="0"
+            disabled={isRunning}
+            onChange={(e) => setMinutes(e.target.value)}
+            onIncrease={() => handleChange(setMinutes, "increase")}
+            onDecrease={() => handleChange(setMinutes, "decrease")}
+          />
+          {/* <div id="minutes">
             <i
               className="bi bi-chevron-double-up"
               onClick={() => handleChange(setMinutes, "increase")}
@@ -180,6 +193,7 @@ function App() {
               value={minutes}
               max="60"
               min="0"
+              disabled={isRunning}
               onChange={(e) => setMinutes(e.target.value)}
               onInput={(e) => handleInput(e)}
             />
@@ -187,9 +201,20 @@ function App() {
               className="bi bi-chevron-double-down"
               onClick={() => handleChange(setMinutes, "decrease")}
             ></i>
-          </div>
+          </div> */}
           {/* SECONDS */}
-          <div id="seconds">
+          <Input
+            id="seconds"
+            label="Seconds"
+            value={seconds}
+            max="60"
+            min="0"
+            disabled={isRunning}
+            onChange={(e) => setSeconds(e.target.value)}
+            onIncrease={() => handleChange(setSeconds, "increase")}
+            onDecrease={() => handleChange(setSeconds, "decrease")}
+          />
+          {/* <div id="seconds">
             <i
               className="bi bi-chevron-double-up"
               onClick={() => handleChange(setSeconds, "increase")}
@@ -200,6 +225,7 @@ function App() {
               value={seconds}
               max="60"
               min="0"
+              disabled={isRunning}
               onChange={(e) => setSeconds(e.target.value)}
               onInput={(e) => handleInput(e)}
             />
@@ -207,7 +233,7 @@ function App() {
               className="bi bi-chevron-double-down"
               onClick={() => handleChange(setSeconds, "decrease")}
             ></i>
-          </div>
+          </div> */}
         </div>
       </div>
       <div id="audio-selector">
