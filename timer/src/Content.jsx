@@ -11,50 +11,52 @@
 
 import { useState, useEffect } from "react";
 
-// function Content() {
-//   const [pic, setPic] = useState()
-
-//   useEffect(()=>{
-//     return () =>{
-//       pic && URL.revokeObjectURL(pic.preview)
-//     }
-//   },[pic])
-
-//   const handleFile = (e) => {
-//     const file = e.target.files[0]
-//     file.preview = URL.createObjectURL(file)
-//     setPic(file)
-//   }
-//   return (<div>
-//     <input
-//     type="file"
-//     onChange={handleFile}
-//     />
-//     {pic && (
-//       <img src={pic.preview} alt="" width="80%"/>
-//     )}
-//   </div>)
-// }
-
 function Content() {
-  const [time, setTime] = useState(200)
+  const [pic, setPic] = useState()
 
-  useEffect(() => {
-    const timerID = setInterval(() => {
-      setTime((prev) => prev - 1)
-    }, 1000)
-
-    return () => {
-      clearInterval(timerID)
+  useEffect(()=>{
+    return () =>{
+      pic && URL.revokeObjectURL(pic.preview)
     }
-
-  })
-  return (
-    <div>
-      <h1>{time}</h1>
-    </div>
-  );
+  },[pic])
+/**
+ * @param {React.ChangeEvent<HTMLInputElement>} e
+ */
+  const handleFile = (e) => {
+    const file = e.target.files[0]
+    file.preview = URL.createObjectURL(file)
+    setPic(file)
+  }
+  return (<div>
+    <input
+    type="file"
+    onChange={handleFile}
+    />
+    {pic && (
+      <img src={pic.preview} alt="" width="80%"/>
+    )}
+  </div>)
 }
+
+// function Content() {
+//   const [time, setTime] = useState(200)
+
+//   useEffect(() => {
+//     const timerID = setInterval(() => {
+//       setTime((prev) => prev - 1)
+//     }, 1000)
+
+//     return () => {
+//       clearInterval(timerID)
+//     }
+
+//   })
+//   return (
+//     <div>
+//       <h1>{time}</h1>
+//     </div>
+//   );
+// }
 
 //*==========================================================================
 
