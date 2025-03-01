@@ -1,4 +1,4 @@
-import { useRef, useEffect } from "react";
+import React, { useRef, useEffect } from "react";
 function Clock({
   logic,
   time,
@@ -12,6 +12,7 @@ function Clock({
   const pauseRef = useRef();
   const resetRef = useRef();
 
+  console.log("Clock rendered");
   const toggleClick = () => {
     if (startRef.current.style.display === "none") {
       startRef.current.style.display = "block";
@@ -54,4 +55,4 @@ function Clock({
   );
 }
 
-export default Clock;
+export default React.memo(Clock);

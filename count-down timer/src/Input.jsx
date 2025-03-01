@@ -1,13 +1,25 @@
-function Input({ id ,label, value, max, min, disabled, onChange, onIncrease, onDecrease }){
+import React from "react";
 
+function Input({
+  id,
+  label,
+  value,
+  max,
+  min,
+  disabled,
+  onChange,
+  onIncrease,
+  onDecrease,
+}) {
+  console.log("Input rendered");
   const handleInput = (e) => {
     if (e.target.value.length === 3 && e.target.value.startsWith("0")) {
       e.target.value = e.target.value.slice(1, 3);
     }
   };
 
-    return (
-      <div id = {id}>
+  return (
+    <div id={id}>
       <i className="bi bi-chevron-double-up" onClick={onIncrease}></i>
       <span className="option-title">{label}</span>
       <input
@@ -21,7 +33,7 @@ function Input({ id ,label, value, max, min, disabled, onChange, onIncrease, onD
       />
       <i className="bi bi-chevron-double-down" onClick={onDecrease}></i>
     </div>
-    )
+  );
 }
 
-export default Input;
+export default React.memo(Input);

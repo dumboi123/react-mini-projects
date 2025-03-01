@@ -25,19 +25,16 @@ function App() {
   const [seconds, setSeconds] = useState(0);
 
   const [time, setTime] = useState(0);
-  const [timeSetted, setTimeSetted] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
 
+  const [toggleClick, setToggleClick] = useState(() => () => {}); // State to store toggleClick function
+  
   const prevTime = useRef();
 
-  const [toggleClick, setToggleClick] = useState(() => () => {}); // State to store toggleClick function
-
-  // const startRef = useRef();
-  // const pauseRef = useRef();
-  // const resetRef = useRef();
 
   const timeRef = useRef();
 
+  console.log("App render");
   useLayoutEffect(() => {
     setHours((prev) => Logic.clamp(prev, 0, 24));
     setTime(Logic.convertTime(hours, minutes, seconds));
@@ -53,16 +50,6 @@ function App() {
     setTime(Logic.convertTime(hours, minutes, seconds));
   }, [seconds]);
 
-  useEffect(() => {
-    if (!isRunning) return;
-
-    const timerId = setInterval(() => {
-      setTime((prev) => prev - 1);
-    }, 1000);
-
-    return () => clearInterval(timerId);
-  }, [isRunning]);
-
   useLayoutEffect(() => {
     if (time === -1 && time < prevTime.current) {
       window.alert("Time's up!");
@@ -72,6 +59,16 @@ function App() {
     }
     prevTime.current = time;
   }, [time]);
+
+  useEffect(() => {
+    if (!isRunning) return;
+
+    const timerId = setInterval(() => {
+      setTime((prev) => prev - 1);
+    }, 1000);
+
+    return () => clearInterval(timerId);
+  }, [isRunning]);
 
   const handleIncrement = (setter) => {
     setter((prev) => prev + 1);
@@ -86,12 +83,6 @@ function App() {
         ? handleIncrement(setter)
         : handleDecrement(setter));
   };
-
-  // const handleInput = (e) => {
-  //   if (e.target.value.length === 3 && e.target.value.startsWith("0")) {
-  //     e.target.value = e.target.value.slice(1, 3);
-  //   }
-  // };
 
   const handleReset = () => {
     setTime(timeRef.current);
@@ -112,18 +103,6 @@ function App() {
   const handlePause = () => {
     setIsRunning(!isRunning);
   };
-
-  // const toggleClick = () => {
-  //   if (startRef.current.style.display === "none") {
-  //     startRef.current.style.display = "block";
-  //     pauseRef.current.style.display = "none";
-  //     resetRef.current.style.display = "none";
-  //   } else {
-  //     startRef.current.style.display = "none";
-  //     pauseRef.current.style.display = "block";
-  //     resetRef.current.style.display = "block";
-  //   }
-  // };
 
   return (
     <>
@@ -150,26 +129,6 @@ function App() {
             onIncrease={() => handleChange(setHours, "increase")}
             onDecrease={() => handleChange(setHours, "decrease")}
           />
-          {/* <div id="hours">
-            <i
-              className="bi bi-chevron-double-up"
-              onClick={() => handleChange(setHours, "increase")}
-            ></i>
-            <span className="option-title">Hours</span>
-            <input
-              type="number"
-              value={hours}
-              max="24"
-              min="0"
-              disabled={isRunning}
-              onChange={(e) => setHours(e.target.value)}
-              onInput={(e) => handleInput(e)}
-            />
-            <i
-              className="bi bi-chevron-double-down"
-              onClick={() => handleChange(setHours, "decrease")}
-            ></i>
-          </div> */}
           {/* MINUTES */}
           <Input
             id="minutes"
@@ -182,26 +141,6 @@ function App() {
             onIncrease={() => handleChange(setMinutes, "increase")}
             onDecrease={() => handleChange(setMinutes, "decrease")}
           />
-          {/* <div id="minutes">
-            <i
-              className="bi bi-chevron-double-up"
-              onClick={() => handleChange(setMinutes, "increase")}
-            ></i>
-            <span className="option-title">Minutes</span>
-            <input
-              type="number"
-              value={minutes}
-              max="60"
-              min="0"
-              disabled={isRunning}
-              onChange={(e) => setMinutes(e.target.value)}
-              onInput={(e) => handleInput(e)}
-            />
-            <i
-              className="bi bi-chevron-double-down"
-              onClick={() => handleChange(setMinutes, "decrease")}
-            ></i>
-          </div> */}
           {/* SECONDS */}
           <Input
             id="seconds"
@@ -214,26 +153,6 @@ function App() {
             onIncrease={() => handleChange(setSeconds, "increase")}
             onDecrease={() => handleChange(setSeconds, "decrease")}
           />
-          {/* <div id="seconds">
-            <i
-              className="bi bi-chevron-double-up"
-              onClick={() => handleChange(setSeconds, "increase")}
-            ></i>
-            <span className="option-title">Seconds</span>
-            <input
-              type="number"
-              value={seconds}
-              max="60"
-              min="0"
-              disabled={isRunning}
-              onChange={(e) => setSeconds(e.target.value)}
-              onInput={(e) => handleInput(e)}
-            />
-            <i
-              className="bi bi-chevron-double-down"
-              onClick={() => handleChange(setSeconds, "decrease")}
-            ></i>
-          </div> */}
         </div>
       </div>
       <div id="audio-selector">
