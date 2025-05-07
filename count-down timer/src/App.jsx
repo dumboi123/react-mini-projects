@@ -1,16 +1,65 @@
-import { useEffect, useState } from "react";
-// import "bootstrap/dist/css/bootstrap.min.css";
+//! useEffect
+// 1. Cap nhat lai state
+// 2. Cap nhat DOM y mutated)
+// 3. Render lai UE
+// 4. Goi cleanup neu deps thay dôi
+// 5. Goi useEffect callback
+//! useLayoutEffect
+// 1. Câp nhât lai state
+// 2. Câp nhat DOM (mutated)
+// 3. Goi cleanup neu deps thay doi (sync)
+// 4. Goi useLayoutEffect callback (sync)
+// 5. Render lai UI
+
+import { useEffect, useState, useRef, useLayoutEffect } from "react";
+import "bootstrap/dist/css/bootstrap.min.css";
+import "bootstrap-icons/font/bootstrap-icons.css";
+import * as Logic from "./Logic";
+import Clock from "./Clock";
+import Input from "./Input";
 import "./App.css";
-import { useRef } from "react";
 
 function App() {
-  const [startTimer, setStartTimer] = useState(true);
-  const [time, setTime] = useState(20);
+  const [hours, setHours] = useState(0);
+  const [minutes, setMinutes] = useState(0);
+  const [seconds, setSeconds] = useState(0);
+
+  const [time, setTime] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
+
+  const [toggleClick, setToggleClick] = useState(() => () => {}); // State to store toggleClick function
   
   const prevTime = useRef();
-  // console.log(`re-render time ${time}`);
-  
+
+
+  const timeRef = useRef();
+
+  console.log("App render");
+  useLayoutEffect(() => {
+    setHours((prev) => Logic.clamp(prev, 0, 24));
+    setTime(Logic.convertTime(hours, minutes, seconds));
+  }, [hours]);
+
+  useLayoutEffect(() => {
+    setMinutes((prev) => Logic.clamp(prev, 0, 60));
+    setTime(Logic.convertTime(hours, minutes, seconds));
+  }, [minutes]);
+
+  useLayoutEffect(() => {
+    setSeconds((prev) => Logic.clamp(prev, 0, 60));
+    setTime(Logic.convertTime(hours, minutes, seconds));
+  }, [seconds]);
+
+  useLayoutEffect(() => {
+    if (time === -1 && time < prevTime.current) {
+      window.alert("Time's up!");
+      setTime(timeRef.current);
+      setIsRunning(false);
+      toggleClick();
+    }
+    prevTime.current = time;
+  }, [time]);
+
   useEffect(() => {
     if (!isRunning) return;
 
@@ -21,85 +70,115 @@ function App() {
     return () => clearInterval(timerId);
   }, [isRunning]);
 
-  useEffect(() => {
-    prevTime.current = time;
+  const handleIncrement = (setter) => {
+    setter((prev) => prev + 1);
+  };
+  const handleDecrement = (setter) => {
+    setter((prev) => prev - 1);
+  };
 
-  }, [time]);
-  
-  const formatTime = (totalSeconds) => {
-    const hours = Math.floor(totalSeconds / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    const secs = totalSeconds % 60;
-
-    return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(
-      2,
-      "0"
-    )}:${String(secs).padStart(2, "0")}`;
+  const handleChange = (setter, condition) => {
+    !isRunning &&
+      (condition === "increase"
+        ? handleIncrement(setter)
+        : handleDecrement(setter));
   };
 
   const handleReset = () => {
-    if (time === 0) {
-      window.alert("Time hasn't started yet");
-      return;
-    }
-    setTime(0);
+    setTime(timeRef.current);
     setIsRunning(false);
-    setStartTimer(true);
+    toggleClick();
   };
 
-  const handleStartContinue = () => {
+  const handleStart = () => {
     if (time === 0) {
-      setStartTimer(false);
-      setIsRunning(true);
+      window.alert("Time hasn't been set yet");
       return;
     }
+    timeRef.current = Logic.convertTime(hours, minutes, seconds);
+    setIsRunning(!isRunning);
+    toggleClick();
+  };
+
+  const handlePause = () => {
     setIsRunning(!isRunning);
   };
 
   return (
     <>
-    <div id="pomodoro">
-      <div id="clock">
-        <div id="timer">
-          <div id="title">Ready?</div>
-          <div id="countdown">
-            <span id="time">{formatTime(time)}</span>
-          </div>
-          <div id="controls" className="reset">
-            <div id="start"><i className="fas fa-play"></i> Start</div>
-            <div id="pause"><i className="fas fa-pause"></i> Pause</div>
-            <div id="reset"><i className="fas fa-sync-alt"></i> Reset</div>
-          </div>
+      <div id="pomodoro">
+        <Clock
+          logic={Logic}
+          time={time}
+          isRunning={isRunning}
+          handleStart={handleStart}
+          handlePause={handlePause}
+          handleReset={handleReset}
+          setToggleClick={setToggleClick}
+        />
+        <div id="input">
+          {/* HOURS */}
+          <Input
+            id="hours"
+            label="Hours"
+            value={hours}
+            max="24"
+            min="0"
+            disabled={isRunning}
+            onChange={(e) => setHours(e.target.value)}
+            onIncrease={() => handleChange(setHours, "increase")}
+            onDecrease={() => handleChange(setHours, "decrease")}
+          />
+          {/* MINUTES */}
+          <Input
+            id="minutes"
+            label="Minutes"
+            value={minutes}
+            max="60"
+            min="0"
+            disabled={isRunning}
+            onChange={(e) => setMinutes(e.target.value)}
+            onIncrease={() => handleChange(setMinutes, "increase")}
+            onDecrease={() => handleChange(setMinutes, "decrease")}
+          />
+          {/* SECONDS */}
+          <Input
+            id="seconds"
+            label="Seconds"
+            value={seconds}
+            max="60"
+            min="0"
+            disabled={isRunning}
+            onChange={(e) => setSeconds(e.target.value)}
+            onIncrease={() => handleChange(setSeconds, "increase")}
+            onDecrease={() => handleChange(setSeconds, "decrease")}
+          />
         </div>
       </div>
-      <div id="options">
-        <div id="session">
-          <i id="incrSession" className="fas fa-angle-double-up"></i>
-          <span className="option-title">Session</span>
-          <input id="sessionInput" type="number" value="30" max="60" min="5" defaultValue={time} />
-          <i id="decrSession" className="fas fa-angle-double-down"></i>
+      <div id="audio-selector">
+        <div id="forest" className="theme">
+          Forest
         </div>
-        <div id="break">
-          <i id="incrBreak" className="fas fa-angle-double-up"></i>
-          <span className="option-title">Break</span>
-          <input id="breakInput" type="number" value="5" max="10" min="1" defaultValue={time}/>
-          <i id="decrBreak" className="fas fa-angle-double-down"></i>
+        <div id="ocean" className="theme">
+          Ocean
+        </div>
+        <div id="rainy" className="selected theme">
+          Rainy
+        </div>
+        <div id="peace" className="theme">
+          Peace
+        </div>
+        <div id="cafe" className="theme">
+          Caf&eacute;
         </div>
       </div>
-    </div>
-    <div id="audio-selector">
-      <div id="forest" className="theme">Forest</div>
-      <div id="ocean" className="theme">Ocean</div>
-      <div id="rainy" className="selected theme">Rainy</div>
-      <div id="peace" className="theme">Peace</div>
-      <div id="cafe" className="theme">Caf&eacute;</div>
-    </div>
-    <audio loop autoplay="false" src="https://joeweaver.me/codepenassets/freecodecamp/challenges/build-a-pomodoro-clock/rain.mp3">
-    </audio>
+      <audio
+        loop
+        autoPlay={false}
+        src="https://joeweaver.me/codepenassets/freecodecamp/challenges/build-a-pomodoro-clock/rain.mp3"
+      ></audio>
     </>
   );
 }
 
-
 export default App;
-
